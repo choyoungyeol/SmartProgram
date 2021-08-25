@@ -1,0 +1,16 @@
+Private Sub Command1_Click()
+    Timer1.Enabled = True
+    Timer1.Interval = 2000
+End Sub
+
+Private Sub Form_Load()
+    Text1.Text = "http://000.000.000.000"       //인터넷 IP 주소
+End Sub
+
+Private Sub Text1_Click()
+    Timer1.Interval = 0
+End Sub
+
+Private Sub Timer1_Timer()
+    WebBrowser1.Navigate Text1.Text
+End Sub
