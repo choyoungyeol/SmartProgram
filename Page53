@@ -1,0 +1,75 @@
+#include <dht.h>
+#include <SoftwareSerial.h>
+#define DHT22_PIN 7
+#define Temp_Cont 8
+#define RH_Cont 9
+
+SoftwareSerial BTSerial(0, 1);
+dht DHT;
+float temperature;
+float humidity;
+int Temp_Value;
+int RH_Value;
+int VB_Temp_Cont = 0;
+int VB_RH_Cont = 0;
+
+String readString;
+
+void setup()
+{
+  Serial.begin(9600);
+  BTSerial.begin(9600);
+  pinMode(Temp_Cont, OUTPUT);
+  delay(300);
+  pinMode(RH_Cont, OUTPUT);
+  delay(300);
+}
+
+void loop()
+{
+  float chk = DHT.read22(DHT22_PIN);
+  temperature = DHT.temperature;
+  humidity = DHT.humidity;
+  if (temperature >= 24) {
+    digitalWrite(Temp_Cont, HIGH);      //dhse 24℃ 이상에서 릴레이 작동 ON
+    Temp_Value = 102;
+  } else {
+    digitalWrite(Temp_Cont, LOW);     //온도 24℃ 이하에서 릴레이 작동 OFF
+    Temp_Value = 101;
+  }
+  if (humidity >= 40) {
+    digitalWrite(RH_Cont, HIGH);        //상대습도 40% 이상에서 릴레이 작동 ON
+    RH_Value = 104;
+  } else {
+    digitalWrite(RH_Cont, LOW);       //상대습도 40% 이하에서 릴레이 작동 OFF
+    RH_Value = 103;
+  }
+String data = "$" + String(temperature) + "/" + String(humidity) + "/" + String(Temp_Value) + "/" + String(RH_Value) + "/" + String(VB_Temp_Cont) + "/" + String(VB_RH_Cont) + "$"; 
+Serial.println(data);
+
+while (Serial.available()) {
+  delay(3);
+    char c = Serial.read();
+    readString += c;
+  }
+  if (readString.length() > 0) {
+    if (readString == "e") {
+      digitalWrite(Temp_Cont, HIGH);
+      VB_Temp_Cont = 0;
+    }
+    if (readString == "f") {
+      digitalWrite(Temp_Cont, LOW);
+      VB_Temp_Cont = 1;
+    }
+    if (readString == "g") {
+      digitalWrite(RH_Cont, HIGH);
+      VB_RH_Cont = 0;
+    }
+    if (readString == "h") {
+      digitalWrite(RH_Cont, LOW);
+      VB_RH_Cont = 1;
+    }
+    readString = "";
+  }
+  delay(5000);
+}
