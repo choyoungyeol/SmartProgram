@@ -1,0 +1,248 @@
+Dim G_data() As String
+Dim G_data2() As String
+Dim j As Integer
+
+Private Sub Command1_Click()
+    Dim eFlag%
+    On Error Resume Next
+    eFlag = True
+    With MSComm1
+        .PortOpen = False
+        .CommPort = Combo1.ListIndex + 1
+        .Settings = Mid(Combo3.Text, 4, 6) + ",N,8,1"
+        .InputMode = comInputModeText
+        .InputLen = 0
+        .Handshaking = comNone
+        .PortOpen = True
+         DoEvents
+         If Not .PortOpen Then
+             eFlag = False
+             MsgBox "통신포트가 정상적으로 열리지 않았습니다.", , "확 인"
+             Text1.Text = "Communication Off"
+             Text1.BackColor = vbRed
+         End If
+     End With
+    If eFlag Then
+        MsgBox "통신포트가 정상적으로 열렸습니다.", , "확 인"
+        Text1.Text = "Communication On"
+        Text1.BackColor = vbBlue
+        Text1.ForeColor = vbWhite
+    End If
+    ID = Combo2.Text
+    Timer1.Enabled = True
+    Timer2.Enabled = True
+End Sub
+
+Private Sub Command2_Click()
+    MSComm1.InBufferCount = 0
+    MSComm1.OutBufferCount = 0
+    If MSComm1.PortOpen = True Then
+        MSComm1.PortOpen = False
+    End If
+    Text1.Text = "Communication Off"
+    Text1.BackColor = vbRed
+    MsgBox "통신포트를 정상적으로 닫았습니다.", , "확 인"
+    Timer1.Enabled = False
+    Timer2.Enabled = False
+End Sub
+
+Private Sub Command3_Click()
+    Dim status As String
+    If Command3.Caption = "ON" Then
+        status = "e"
+        MSComm1.Output = status
+        Command3.Caption = "OFF"
+    Else
+        status = "f"
+        MSComm1.Output = status
+        Command3.Caption = "ON"
+    End If
+End Sub
+
+Private Sub Command4_Click()
+    Dim status As String
+    If Command4.Caption = "ON" Then
+        status = "g"
+        MSComm1.Output = status
+        Command3.Caption = "OFF"
+    Else
+        status = "h"
+        MSComm1.Output = status
+        Command4.Caption = "ON"
+    End If
+End Sub
+
+Private Sub Form_Load()
+    If MSComm1.PortOpen = True Then
+        MSComm1.PortOpen = False
+    End If
+    
+    For i = 1 To 40
+        Combo1.AddItem "COM" & i
+    Next i
+    
+    j = 1
+    Combo1.ListIndex = 4
+    
+    Combo2.AddItem "0"
+    Combo2.AddItem "1"
+    Combo2.AddItem "2"
+    Combo2.AddItem "3"
+    Combo2.AddItem "4"
+    Combo2.AddItem "5"
+    Combo2.AddItem "6"
+    Combo2.AddItem "7"
+    
+    Combo2.ListIndex = 0
+    Combo3.AddItem "(0)4800"
+    Combo3.AddItem "(1)9600"
+    Combo3.AddItem "(2)14400"
+    Combo3.AddItem "(3)19200"
+    Combo3.AddItem "(4)38400"
+    Combo3.AddItem "(5)57600"
+    Combo3.AddItem "(6)76800"
+    Combo3.AddItem "(7)115200"
+    Combo3.ListIndex = 1
+    
+    Text2.Text = ""
+    Text3.Text = ""
+    Text2.Visible = False
+    Text3.Visible = False
+    
+    Label5.Caption = ""
+    Label7.Caption = ""
+    
+    MSFlexGrid1.TextMatrix(0, 0) = "월"
+    MSFlexGrid1.TextMatrix(0, 1) = "일"
+    MSFlexGrid1.TextMatrix(0, 2) = "시"
+    MSFlexGrid1.TextMatrix(0, 3) = "분"
+    MSFlexGrid1.TextMatrix(0, 4) = "온도"
+    MSFlexGrid1.TextMatrix(0, 5) = "온도제어"
+    MSFlexGrid1.TextMatrix(0, 6) = "상대습도"
+    MSFlexGrid1.TextMatrix(0, 7) = "상대습도제어"
+    MSFlexGrid1.TextMatrix(0, 8) = "측정횟수"
+End Sub
+
+Private Sub Option1_Click()
+    Timer2.Enabled = True
+End Sub
+
+Private Sub Option2_Click()
+    Timer2.Enabled = True
+End Sub
+
+Private Sub Timer1_Timer()
+    Dim result() As Byte
+On Error GoTo ErrorGo
+    result = MSComm1.Input
+    Text2.Text = ""
+    Text3.Text = ""
+    
+    For i = 0 To UBound(result)
+        Text2.Text = Text2.Text & Chr(result(i))
+    Next i
+    
+    G_data2() = Split(Text2.Text, "$")
+    Select Case Text2.Text
+    Case ""
+        Text2.Text = ""
+    Case "97"
+        Text2.Text = ""
+    Case "98"
+        Text2.Text = ""
+    Case "99"
+        Text2.Text = ""
+    Case "100"
+        Text2.Text = ""
+    Case "101"
+        Text2.Text = ""
+    Case "102"
+        Text2.Text = ""
+    Case "103"
+        Text2.Text = ""
+    Case "104"
+        Text2.Text = ""
+    Case "105"
+        Text2.Text = ""
+    Case "106"
+        Text2.Text = ""
+    Case "107"
+        Text2.Text = ""
+    Case Else
+        Text3.Text = G_data2(1)
+    End Select
+
+    If Text3.Text = "" Then
+    Else
+        G_data() = Split(Text3.Text, "/")
+        Label5.Caption = G_data(0)     '온도
+        Label7.Caption = G_data(1)     '상대습도
+    
+        Label5.Caption = Format(Label5.Caption, "#0.0")
+        Label7.Caption = Format(Label7.Caption, "#0.0")
+        
+        If G_data(2) = 101 Then
+            Command3.Caption = "OFF"
+          Else
+            Command3.Caption = "ON"
+        End If
+        
+        If G_data(3) = 103 Then
+            Command4.Caption = "OFF"
+        Else
+            Command4.Caption = "ON"
+        End If
+        MSFlexGrid1.Rows = j + 1
+        MSFlexGrid1.TextMatrix(MSFlexGrid1.Rows - 1, 0) = Month(Now)
+        MSFlexGrid1.TextMatrix(MSFlexGrid1.Rows - 1, 1) = Day(Now)
+        MSFlexGrid1.TextMatrix(MSFlexGrid1.Rows - 1, 2) = Hour(Now)
+        MSFlexGrid1.TextMatrix(MSFlexGrid1.Rows - 1, 3) = Minute(Now)
+        MSFlexGrid1.TextMatrix(MSFlexGrid1.Rows - 1, 4) = Label5.Caption
+        MSFlexGrid1.TextMatrix(MSFlexGrid1.Rows - 1, 5) = G_data(4)
+        MSFlexGrid1.TextMatrix(MSFlexGrid1.Rows - 1, 6) = Label7.Caption
+        MSFlexGrid1.TextMatrix(MSFlexGrid1.Rows - 1, 7) = G_data(5)
+        MSFlexGrid1.TextMatrix(MSFlexGrid1.Rows - 1, 8) = j
+        j = j + 1
+    End If
+    Exit Sub
+
+ErrorGo:
+
+    Resume Next
+End Sub
+
+Private Sub Timer2_Timer()
+    Dim timecheck1 As String
+    Dim timecheck As String
+    
+    timecheck1 = Year(Now) & ", " & Month(Now) & ", " & Day(Now) & ", " & Hour(Now) & ", " & Minute(Now)
+    timecheck = timecheck1 & ", " & Label5.Caption & ", " & Label7.Caption & ", " & Command3.Caption & ", " & Command4.Caption
+    
+     Open App.Path & "\Temp_RH_SD_Bluetooth.txt" For Append As #1
+        Print #1, timecheck
+    Close #1
+    
+    If Option1.Value = True Then
+        For i = 1 To MSFlexGrid1.Rows - 1
+            MSChart1.RowCount = MSFlexGrid1.Rows - 1
+            MSChart1.Row = i
+            MSChart1.Column = 1
+            MSChart1.Data = MSFlexGrid1.TextMatrix(i, 4)
+            MSChart1.RowLabel = MSFlexGrid1.TextMatrix(i, 8)
+            MSChart1.Plot.Axis(VtChAxisIdY).AxisTitle.Text = "온 도 (℃)"
+
+        Next i
+        
+    End If
+    
+    If Option2.Value = True Then
+         For i = 1 To MSFlexGrid1.Rows - 1
+            MSChart1.RowCount = MSFlexGrid1.Rows - 1
+            MSChart1.Row = i
+            MSChart1.Column = 1
+            MSChart1.Data = MSFlexGrid1.TextMatrix(i, 6)
+            MSChart1.RowLabel = MSFlexGrid1.TextMatrix(i, 8)
+            MSChart1.Plot.Axis(VtChAxisIdY).AxisTitle.Text = "상대습도 (%)"
+        Next i
+    End If
+End Sub
