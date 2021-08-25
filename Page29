@@ -1,0 +1,73 @@
+Private Sub Timer1_Timer()
+    Dim result() As Byte    
+On Error GoTo ErrorGo    
+    result = MSComm1.Input
+    Text2.Text = ""
+    Text3.Text = ""    
+    For i = 0 To UBound(result)
+        Text2.Text = Text2.Text & Chr(result(i))
+    Next i    
+    G_data2() = Split(Text2.Text, "$")
+    Select Case Text2.Text
+    Case ""
+        Text2.Text = ""
+    Case "97"
+        Text2.Text = ""
+    Case "98"
+        Text2.Text = ""
+    Case "99"
+        Text2.Text = ""
+    Case "100"
+        Text2.Text = ""
+    Case "101"
+        Text2.Text = ""
+    Case "102"
+        Text2.Text = ""
+    Case "103"
+        Text2.Text = ""
+    Case "104"
+        Text2.Text = ""
+    Case "105"
+        Text2.Text = ""
+    Case "106"
+        Text2.Text = ""
+    Case "107"
+        Text2.Text = ""
+    Case Else
+        Text3.Text = G_data2(1)
+    End Select    
+    If Text3.Text = "" Then
+    Else
+        G_data() = Split(Text3.Text, "/")
+        Label5.Caption = G_data(0)     '온도
+        Label7.Caption = G_data(1)     '상대습도
+        Label9.Caption = G_data(2)     '노점온도
+        Label11.Caption = G_data(3)    '절대습도
+        Label13.Caption = G_data(4)    '포화수증기압
+        Label15.Caption = G_data(5)    '수증기압
+        Label17.Caption = G_data(6)    '수증기압차    
+        Label5.Caption = Format(Label5.Caption, "#0.0")
+        Label7.Caption = Format(Label7.Caption, "#0.0")
+        Label9.Caption = Format(Label9.Caption, "#0.0")
+        Label11.Caption = Format(Label11.Caption, "#0.00")
+        Label13.Caption = Format(Label13.Caption, "#0.00")
+        Label15.Caption = Format(Label15.Caption, "#0.00")
+        Label17.Caption = Format(Label17.Caption, "#0.00")
+    End If
+    Exit Sub
+
+ErrorGo:
+
+    Resume Next
+End Sub
+
+
+Private Sub Timer2_Timer()
+    Dim timecheck1 As String
+    Dim timecheck As String    
+    timecheck1 = Year(Now) & ", " & Month(Now) & ", " & Day(Now) & ", " & Hour(Now) & ", " & Minute(Now)
+    timecheck = timecheck1 & ", " & Label5.Caption & ", " & Label7.Caption & ", " & Label9.Caption & ", " & Label11.Caption & ", " & Label3.Caption & ", " & Label15.Caption & ", " & Label17.Caption    
+     Open App.Path & "\Temp_RH_Air.txt" For Append As #1
+        Print #1, timecheck
+    Close #1
+End Sub
